@@ -1,7 +1,6 @@
 import { Menu, Phone } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import logo from '../../imports/download.png';
-import splashVideo from '../../imports/3d.mp4';
 import { doc, setDoc, increment } from 'firebase/firestore';
 import { db } from '../../firebase/db';
 
@@ -11,8 +10,8 @@ export function Header() {
   const whatsappNumber = '5554984192145';
 
   useEffect(() => {
-    // 2s de vídeo + 0.3s de transição (fade out)
-    const t = setTimeout(() => setShowSplash(false), 2300);
+    // Tela de carregamento tem duração de 2.2s (barra enche em 2s)
+    const t = setTimeout(() => setShowSplash(false), 2200);
     return () => clearTimeout(t);
   }, []);
 
@@ -25,21 +24,47 @@ export function Header() {
   return (
     <>
       <style>{`
-        @keyframes videoFadeOut {
-          0% { opacity: 1; }
-          85% { opacity: 1; }   /* Mantém 100% visível por ~1.8s (considerando os 2.3s do React) */
-          100% { opacity: 0; }  /* Fade out suave no final */
+        .logo-splash {
+          position: fixed;
+          left: 50%;
+          top: 50%;
+          transform: translate(-50%, -50%);
+          height: 120px;
+          z-index: 101;
+          filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5));
         }
 
-        .video-splash {
+        .loading-bar-container {
           position: fixed;
-          inset: 0;
-          width: 100vw;
-          height: 100vh;
+          left: 50%;
+          top: calc(50% + 90px);
+          transform: translateX(-50%);
+          width: 200px;
+          height: 4px;
+          background: #333;
+          border-radius: 4px;
           z-index: 101;
-          object-fit: cover;
-          background: #000;
-          animation: videoFadeOut 2.3s ease forwards;
+          overflow: hidden;
+        }
+
+        @keyframes fillBar {
+          0% { width: 0%; }
+          10% { width: 15%; }
+          50% { width: 60%; }
+          100% { width: 100%; }
+        }
+
+        .loading-bar-fill {
+          height: 100%;
+          background: #E53E3E; /* red-600 */
+          border-radius: 4px;
+          animation: fillBar 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes splashFadeOut {
+          0% { opacity: 1; }
+          90% { opacity: 1; }
+          100% { opacity: 0; }
         }
 
         .splash-overlay {
@@ -48,17 +73,7 @@ export function Header() {
           z-index: 100;
           background: #000;
           pointer-events: none;
-          animation: videoFadeOut 2.3s ease forwards;
-        }
-
-        @keyframes pageFadeIn {
-          0% { opacity: 0; }
-          100% { opacity: 1; }
-        }
-
-        .page-content {
-          /* A página do site começa a aparecer (fade in) a partir de 1.8s */
-          animation: pageFadeIn 0.8s ease 1.8s both;
+          animation: splashFadeOut 2.2s ease forwards;
         }
       `}</style>
 
@@ -66,14 +81,11 @@ export function Header() {
         <>
           <div className="splash-overlay" />
 
-          {/* Vídeo de abertura vertical em tela cheia. */}
-          <video
-            src={splashVideo}
-            autoPlay
-            muted
-            playsInline
-            className="video-splash"
-          />
+          {/* Logo e Barra de Progresso */}
+          <img src={logo} alt="Brombatti" className="logo-splash" />
+          <div className="loading-bar-container">
+            <div className="loading-bar-fill" />
+          </div>
         </>
       )}
 

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../../../firebase/db';
-import { Save, RefreshCw, Server, Shield, Link as LinkIcon } from 'lucide-react';
+import { Save, RefreshCw, Server, Shield, Link as LinkIcon, FileText, X } from 'lucide-react';
 
 export function SettingsPage() {
   const [config, setConfig] = useState({
@@ -13,6 +13,7 @@ export function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [manualOpen, setManualOpen] = useState(false);
 
   useEffect(() => {
     const loadConfig = async () => {
@@ -83,6 +84,14 @@ export function SettingsPage() {
                 <option value="custom">API Personalizada</option>
               </select>
               <p className="text-xs text-gray-400 mt-1">Selecione o sistema de gestão atual do supermercado.</p>
+              
+              <button 
+                onClick={() => setManualOpen(true)}
+                className="mt-3 flex items-center gap-1.5 text-sm font-medium text-red-600 hover:text-red-700 transition-colors"
+              >
+                <FileText className="h-4 w-4" />
+                Ler Manual de Integração do {config.provider.toUpperCase()}
+              </button>
             </div>
 
             <div>
@@ -154,6 +163,50 @@ export function SettingsPage() {
           </button>
         </div>
       </div>
+
+      {/* Modal do Manual */}
+      {manualOpen && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50">
+              <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                <FileText className="h-5 w-5 text-red-600" />
+                Manual de Integração API - {config.provider.toUpperCase()}
+              </h3>
+              <button onClick={() => setManualOpen(false)} className="text-gray-400 hover:text-gray-600">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto flex-1 text-gray-700 text-sm leading-relaxed space-y-4">
+              <p>Este é o guia rápido para integração automática do <strong>{config.provider.toUpperCase()}</strong> com a nossa plataforma.</p>
+              
+              <h4 className="font-bold text-gray-900 mt-6">Passo 1: Geração do Token</h4>
+              <p>No painel administrativo do seu sistema de caixa, acesse <strong>Integrações &gt; Gerar Token API</strong>. Copie o código gerado de 32 caracteres e cole no campo "Token / Chave de Acesso" do nosso painel.</p>
+
+              <h4 className="font-bold text-gray-900 mt-4">Passo 2: Configuração de Endpoint</h4>
+              <p>Dependendo da versão do seu sistema, a URL de API (Endpoint) será diferente. Normalmente ela segue o formato: <code className="bg-gray-100 px-2 py-1 rounded text-red-600">https://api.seusistema.com.br/v2/</code>. Consulte o suporte do seu ERP caso não saiba a sua URL local.</p>
+
+              <h4 className="font-bold text-gray-900 mt-4">Passo 3: Mapeamento de Categorias</h4>
+              <p>O nosso sistema buscará apenas os produtos marcados com o flag <code>ecommerce_visible=true</code> no seu PDV. Certifique-se de que os setores (Açougue, Padaria, Hortifruti) tenham os mesmos nomes no seu caixa e aqui no painel administrativo para o vínculo automático funcionar perfeitamente.</p>
+              
+              <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 mt-6 text-blue-800 flex items-start gap-3">
+                <Shield className="h-5 w-5 shrink-0" />
+                <p className="text-sm">A sincronização automática rodará todos os dias de madrugada, substituindo preços e ativando/desativando ofertas automaticamente com base nas informações do seu caixa.</p>
+              </div>
+            </div>
+
+            <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end">
+              <button 
+                onClick={() => setManualOpen(false)}
+                className="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors"
+              >
+                Entendi, Fechar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

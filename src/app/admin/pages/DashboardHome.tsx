@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { collection, onSnapshot, doc } from 'firebase/firestore';
+import { collection, onSnapshot, doc, query, orderBy, limit } from 'firebase/firestore';
 import { db } from '../../../firebase/db';
 import { Package, Star, Tag, MessageCircle } from 'lucide-react';
 
@@ -10,6 +10,7 @@ export function DashboardHome() {
     totalCategories: 0,
     whatsappClicks: 0,
   });
+  const [recentProducts, setRecentProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -22,6 +23,12 @@ export function DashboardHome() {
         if (d.data().onOffer) onOffer++;
       });
       setStats(s => ({ ...s, totalProducts: total, productsOnOffer: onOffer }));
+    });
+
+    // Produtos recentes
+    const qRecent = query(collection(db, 'products'), orderBy('createdAt', 'desc'), limit(5));
+    const unsubRecent = onSnapshot(qRecent, snap => {
+      setRecentProducts(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     });
 
     // Escuta categorias
@@ -40,6 +47,7 @@ export function DashboardHome() {
 
     return () => {
       unsubProducts();
+      unsubRecent();
       unsubCategories();
       unsubWhatsapp();
     };
@@ -53,8 +61,8 @@ export function DashboardHome() {
   ];
 
   return (
-    <div className="p-8 max-w-7xl mx-auto">
-      <div className="mb-8">
+    <div className="p-8 max-w-7xl mx-auto space-y-8">
+      <div>
         <h2 className="text-2xl font-bold text-gray-800">Visão Geral</h2>
         <p className="text-gray-500 text-sm mt-1">Acompanhe as métricas do seu aplicativo em tempo real.</p>
       </div>
@@ -76,6 +84,57 @@ export function DashboardHome() {
             </div>
           );
         })}
+      </div>
+
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+          <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+            <Package className="h-5 w-5 text-gray-400" />
+            Últimos Produtos Cadastrados
+          </h3>
+          <a href="/admin/products" className="text-sm font-medium text-red-600 hover:text-red-700">
+            Ver Todos
+          </a>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm text-left">
+            <thead className="bg-gray-50 text-gray-500">
+              <tr>
+                <th className="px-6 py-4 font-medium">Produto</th>
+                <th className="px-6 py-4 font-medium">Categoria</th>
+                <th className="px-6 py-4 font-medium">Preço</th>
+                <th className="px-6 py-4 font-medium">Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {recentProducts.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="px-6 py-8 text-center text-gray-400">Nenhum produto cadastrado ainda.</td>
+                </tr>
+              )}
+              {recentProducts.map(prod => (
+                <tr key={prod.id} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <img src={prod.imageUrl} alt={prod.name} className="w-10 h-10 rounded-lg object-cover bg-gray-100" />
+                      <div>
+                        <p className="font-medium text-gray-800">{prod.name}</p>
+                        {prod.onOffer && <span className="text-[10px] font-bold text-red-600 uppercase tracking-wider">Em Oferta</span>}
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-gray-600">{prod.category}</td>
+                  <td className="px-6 py-4 font-medium text-gray-800">R$ {Number(prod.price).toFixed(2).replace('.', ',')}</td>
+                  <td className="px-6 py-4">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${prod.visible ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                      {prod.visible ? 'Visível' : 'Oculto'}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
