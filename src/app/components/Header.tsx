@@ -2,6 +2,8 @@ import { Menu, Phone } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import logo from '../../imports/download.png';
 import splashVideo from '../../imports/3d.mp4';
+import { doc, setDoc, increment } from 'firebase/firestore';
+import { db } from '../../firebase/db';
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -9,173 +11,41 @@ export function Header() {
   const whatsappNumber = '5554984192145';
 
   useEffect(() => {
-    const t = setTimeout(() => setShowSplash(false), 3500); // Aumentei o tempo para 3.5s para o vídeo ter destaque
+    // Corte seco e instantâneo com exatos 2 segundos
+    const t = setTimeout(() => setShowSplash(false), 2000);
     return () => clearTimeout(t);
   }, []);
 
   const handleWhatsAppClick = () => {
+    // Registra o clique no Firestore sem bloquear a tela
+    setDoc(doc(db, 'stats', 'whatsapp'), { clicks: increment(1) }, { merge: true }).catch(console.error);
     window.open(`https://wa.me/${whatsappNumber}?text=Olá! Gostaria de enviar minha lista de compras.`, '_blank');
   };
 
   return (
     <>
       <style>{`
-        @keyframes logoEntrance {
-          0% {
-            transform: translate(-50%, -50%) scale(0.3);
-            opacity: 0;
-            filter: blur(10px);
-          }
-          25% {
-            opacity: 1;
-            filter: blur(0);
-          }
-          50% {
-            transform: translate(-50%, -50%) scale(1.08);
-          }
-          70% {
-            transform: translate(-50%, -50%) scale(0.98);
-          }
-          85% {
-            transform: translate(-50%, -50%) scale(1.02);
-            opacity: 1;
-          }
-          100% {
-            transform: translate(-50%, -50%) scale(1.3);
-            opacity: 0;
-            filter: blur(8px);
-          }
-        }
-
-        .logo-animation {
-          position: fixed;
-          left: 50%;
-          top: 50%;
-          width: auto;
-          height: 140px;
-          z-index: 101;
-          animation: logoEntrance 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-          filter: drop-shadow(0 10px 30px rgba(0,0,0,0.2));
-        }
-
         .video-splash {
           position: fixed;
-          left: 50%;
-          top: 50%;
+          inset: 0;
           width: 100vw;
           height: 100vh;
-          max-width: 100%;
           z-index: 101;
           object-fit: cover;
-          animation: logoEntrance 3.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-          filter: drop-shadow(0 10px 30px rgba(0,0,0,0.5));
-          border-radius: 24px;
-        }
-
-        @keyframes splashFadeOut {
-          0% { opacity: 1; }
-          70% { opacity: 1; }
-          100% { opacity: 0; }
+          background: #000;
         }
 
         .splash-overlay {
           position: fixed;
           inset: 0;
           z-index: 100;
-          background: #000; /* Fundo escuro para destacar o vídeo */
-          pointer-events: none;
-          animation: splashFadeOut 3.5s ease forwards;
-        }
-
-        @keyframes pulseRing {
-          0% {
-            transform: translate(-50%, -50%) scale(0.8);
-            opacity: 0.8;
-          }
-          50% {
-            transform: translate(-50%, -50%) scale(1.2);
-            opacity: 0.3;
-          }
-          100% {
-            transform: translate(-50%, -50%) scale(1.5);
-            opacity: 0;
-          }
-        }
-
-        .pulse-ring {
-          position: fixed;
-          left: 50%;
-          top: 50%;
-          width: 180px;
-          height: 180px;
-          border-radius: 50%;
-          border: 2px solid rgba(37, 211, 102, 0.3);
-          z-index: 100;
-          animation: pulseRing 2s ease-out infinite;
-        }
-
-        @keyframes particlesFloat {
-          0% {
-            transform: translate(-50%, -50%) scale(0);
-            opacity: 0.8;
-          }
-          100% {
-            transform: translate(-50%, -50%) scale(3);
-            opacity: 0;
-          }
-        }
-
-        .particle {
-          position: fixed;
-          left: 50%;
-          top: 50%;
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-          background: #25D366;
-          z-index: 100;
-          animation: particlesFloat 2s ease-out forwards;
-        }
-
-        .particle:nth-child(1) { animation-delay: 0s; }
-        .particle:nth-child(2) { animation-delay: 0.2s; }
-        .particle:nth-child(3) { animation-delay: 0.4s; }
-        .particle:nth-child(4) { animation-delay: 0.6s; }
-        .particle:nth-child(5) { animation-delay: 0.8s; }
-        .particle:nth-child(6) { animation-delay: 1s; }
-
-        @keyframes pageFadeIn {
-          0% {
-            opacity: 0;
-            transform: translateY(10px);
-          }
-          100% {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        .page-content {
-          animation: pageFadeIn 0.6s ease-out 3.5s both;
+          background: #000;
         }
       `}</style>
 
       {showSplash && (
         <>
           <div className="splash-overlay" />
-
-          {/* Anéis pulsantes */}
-          <div className="pulse-ring" />
-          <div className="pulse-ring" style={{ animationDelay: '0.3s', width: '200px', height: '200px' }} />
-          <div className="pulse-ring" style={{ animationDelay: '0.6s', width: '220px', height: '220px' }} />
-
-          {/* Partículas */}
-          <div className="particle" />
-          <div className="particle" />
-          <div className="particle" />
-          <div className="particle" />
-          <div className="particle" />
-          <div className="particle" />
 
           {/* Vídeo de abertura vertical em tela cheia. */}
           <video

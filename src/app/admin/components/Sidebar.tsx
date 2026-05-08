@@ -2,16 +2,16 @@ import { NavLink } from 'react-router-dom';
 import { LayoutDashboard, Package, Tag, Star, Settings, LogOut, ChefHat, Globe, Menu, X } from 'lucide-react';
 import { useAuth } from '../AuthContext';
 import { useState } from 'react';
-import logo from '../../../imports/download.png';
+import logo from '../../../imports/clear.png';
 
 const links = [
-  { to: '/admin',            label: 'Dashboard',        icon: LayoutDashboard, end: true },
-  { to: '/admin/products',   label: 'Produtos',          icon: Package },
-  { to: '/admin/offers',     label: 'Ofertas da Semana', icon: Star },
-  { to: '/admin/categories', label: 'Categorias',        icon: Tag },
-  { to: '/admin/butcher',    label: 'Açougue & Padaria', icon: ChefHat },
-  { to: '/admin/site',       label: 'Página do Site',    icon: Globe },
-  { to: '/admin/settings',   label: 'Configurações',     icon: Settings },
+  { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true },
+  { to: '/admin/products', label: 'Produtos', icon: Package },
+  { to: '/admin/offers', label: 'Ofertas da Semana', icon: Star },
+  { to: '/admin/categories', label: 'Categorias', icon: Tag },
+  { to: '/admin/butcher', label: 'Açougue & Padaria', icon: ChefHat },
+  { to: '/admin/site', label: 'Página do Site', icon: Globe },
+  { to: '/admin/settings', label: 'Configurações', icon: Settings },
 ];
 
 export function Sidebar() {
@@ -46,10 +46,9 @@ export function Sidebar() {
             end={end}
             onClick={() => setOpen(false)}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                isActive
-                  ? 'bg-red-600 text-white'
-                  : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+              `flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${isActive
+                ? 'bg-red-600 text-white'
+                : 'text-gray-300 hover:bg-gray-800 hover:text-white'
               }`
             }
           >
