@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brombatti - Corrida no Supermercado</title>
+    <style>
+        :root {
+            --red: #b32a35;
+            --blue: #2b3d6d;
+            --light-blue: #2daae1;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        #game-header {
+            background-color: var(--red);
+            color: white;
+            width: 100%;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+        }
+
+        #list-container {
+            background: white;
+            padding: 10px 20px;
+            border-radius: 0 0 15px 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            border: 2px solid var(--blue);
+        }
+
+        #target-item {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--blue);
+        }
+
+        #game-canvas {
+            position: relative;
+            width: 90vw;
+            height: 60vh;
+            background: #fff;
+            border-radius: 20px;
+            border: 4px dashed var(--light-blue);
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .item {
+            position: absolute;
+            font-size: 50px;
+            transition: transform 0.1s;
+            cursor: pointer;
+        }
+
+        .item:hover {
+            transform: scale(1.2);
+        }
+
+        #stats {
+            margin-top: 20px;
+            font-size: 20px;
+            display: flex;
+            gap: 20px;
+        }
+
+        .timer {
+            color: var(--red);
+            font-weight: bold;
+        }
+
+        .score {
+            color: var(--blue);
+            font-weight: bold;
+        }
+
+        /* Telas de Overlay */
+        #overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            z-index: 100;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 20px;
+            background: var(--light-blue);
+            border: none;
+            color: white;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            background: #1a8ab8;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-header">
+        <h1>BROMBATTI SUPERMERCADOS</h1>
+    </div>
+
+    <div id="list-container">
+        <span>COMPRE UM(A): </span>
+        <span id="target-item">---</span>
+    </div>
+
+    <div id="game-canvas"></div>
+
+    <div id="stats">
+        <div class="score">Pontos: <span id="score-val">0</span></div>
+        <div class="timer">Tempo: <span id="time-val">10</span>s</div>
+    </div>
+
+    <div id="overlay">
+        <h1 id="msg">🛒 Desafio de Compras!</h1>
+        <p id="sub-msg">Clique apenas nos itens da lista!</p>
+        <button onclick="startGame()">COMEÇAR</button>
+    </div>
+
+    <script>
+        const itemsData = [
+            { name: 'Maçã', emoji: '🍎' },
+            { name: 'Leite', emoji: '🥛' },
+            { name: 'Pão', emoji: '🍞' },
+            { name: 'Frango', emoji: '🍗' },
+            { name: 'Queijo', emoji: '🧀' },
+            { name: 'Ovo', emoji: '🥚' },
+            { name: 'Cerveja', emoji: '🍺' },
+            { name: 'Banana', emoji: '🍌' },
+            { name: 'Pizza', emoji: '🍕' },
+            { name: 'Chocolate', emoji: '🍫' }
+        ];
+
+        let score = 0;
+        let timeLeft = 10;
+        let timerId;
+        let targetItem = null;
+        const canvas = document.getElementById('game-canvas');
+        const targetDisplay = document.getElementById('target-item');
+        const scoreDisplay = document.getElementById('score-val');
+        const timeDisplay = document.getElementById('time-val');
+        const overlay = document.getElementById('overlay');
+
+        function startGame() {
+            score = 0;
+            timeLeft = 10;
+            scoreDisplay.textContent = score;
+            timeDisplay.textContent = timeLeft;
+            overlay.style.display = 'none';
+
+            nextRound();
+
+            clearInterval(timerId);
+            timerId = setInterval(() => {
+                timeLeft -= 1;
+                timeDisplay.textContent = timeLeft;
+                if (timeLeft <= 0) gameOver("O tempo acabou!");
+            }, 1000);
+        }
+
+        function nextRound() {
+            canvas.innerHTML = '';
+            // Escolhe o item alvo
+            targetItem = itemsData[Math.floor(Math.random() * itemsData.length)];
+            targetDisplay.textContent = targetItem.name.toUpperCase();
+
+            // Gera itens aleatórios na tela
+            for (let i = 0; i < 15; i++) {
+                const randomItem = itemsData[Math.floor(Math.random() * itemsData.length)];
+                createItemElement(randomItem);
+            }
+
+            // Garante que o alvo exista pelo menos uma vez
+            createItemElement(targetItem);
+        }
+
+        function createItemElement(itemObj) {
+            const div = document.createElement('div');
+            div.className = 'item';
+            div.textContent = itemObj.emoji;
+
+            // Posição aleatória
+            const x = Math.random() * (canvas.clientWidth - 60);
+            const y = Math.random() * (canvas.clientHeight - 60);
+
+            div.style.left = x + 'px';
+            div.style.top = y + 'px';
+
+            div.onclick = (e) => {
+                e.stopPropagation();
+                if (itemObj.name === targetItem.name) {
+                    score += 10;
+                    timeLeft += 1; // Bônus de tempo
+                    scoreDisplay.textContent = score;
+                    nextRound();
+                } else {
+                    gameOver("Você comprou o item errado!");
+                }
+            };
+
+            canvas.appendChild(div);
+        }
+
+        function gameOver(reason) {
+            clearInterval(timerId);
+            overlay.style.display = 'flex';
+            document.getElementById('msg').textContent = "GAME OVER";
+            document.getElementById('sub-msg').textContent = `${reason} Pontuação final: ${score}`;
+            document.querySelector('button').textContent = "TENTAR NOVAMENTE";
+        }
+    </script>
+
+</body>
+
+</html>
