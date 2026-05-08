@@ -1,6 +1,7 @@
 import { Menu, Phone } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import logo from '../../imports/download.png';
+import splashVideo from '../../imports/3d.mp4';
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -8,7 +9,7 @@ export function Header() {
   const whatsappNumber = '5554984192145';
 
   useEffect(() => {
-    const t = setTimeout(() => setShowSplash(false), 2500);
+    const t = setTimeout(() => setShowSplash(false), 3500); // Aumentei o tempo para 3.5s para o vídeo ter destaque
     return () => clearTimeout(t);
   }, []);
 
@@ -57,6 +58,20 @@ export function Header() {
           filter: drop-shadow(0 10px 30px rgba(0,0,0,0.2));
         }
 
+        .video-splash {
+          position: fixed;
+          left: 50%;
+          top: 50%;
+          width: 100vw;
+          height: 100vh;
+          max-width: 100%;
+          z-index: 101;
+          object-fit: cover;
+          animation: logoEntrance 3.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+          filter: drop-shadow(0 10px 30px rgba(0,0,0,0.5));
+          border-radius: 24px;
+        }
+
         @keyframes splashFadeOut {
           0% { opacity: 1; }
           70% { opacity: 1; }
@@ -67,9 +82,9 @@ export function Header() {
           position: fixed;
           inset: 0;
           z-index: 100;
-          background: radial-gradient(circle at center, #ffffff 0%, #f0f0f0 100%);
+          background: #000; /* Fundo escuro para destacar o vídeo */
           pointer-events: none;
-          animation: splashFadeOut 2.5s ease forwards;
+          animation: splashFadeOut 3.5s ease forwards;
         }
 
         @keyframes pulseRing {
@@ -141,7 +156,7 @@ export function Header() {
         }
 
         .page-content {
-          animation: pageFadeIn 0.6s ease-out 2.5s both;
+          animation: pageFadeIn 0.6s ease-out 3.5s both;
         }
       `}</style>
 
@@ -162,10 +177,13 @@ export function Header() {
           <div className="particle" />
           <div className="particle" />
 
-          <img
-            src={logo}
-            alt="Brombatti"
-            className="logo-animation"
+          {/* Vídeo de abertura vertical em tela cheia. */}
+          <video
+            src={splashVideo}
+            autoPlay
+            muted
+            playsInline
+            className="video-splash"
           />
         </>
       )}

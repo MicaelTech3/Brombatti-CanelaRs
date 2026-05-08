@@ -72,6 +72,68 @@ export function ProductsPage() {
   const toggleVisible = async (p: Product) =>
     updateDoc(doc(db, 'products', p.id), { visible: !p.visible });
 
+  const loadInitialProducts = async () => {
+    setSaving(true);
+    const defaults = [
+      {
+        name: 'Picanha Premium',
+        description: 'Corte selecionado e macio',
+        price: 45.90,
+        originalPrice: 59.90,
+        discount: 23,
+        category: 'Açougue',
+        imageUrl: 'https://images.unsplash.com/photo-1599834255434-c137726a0637?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
+        visible: true,
+        onOffer: true,
+        unit: 'kg',
+      },
+      {
+        name: 'Pão Francês',
+        description: 'Quentinho toda hora',
+        price: 8.90,
+        originalPrice: 12.90,
+        discount: 31,
+        category: 'Padaria',
+        imageUrl: 'https://images.unsplash.com/photo-1555932450-31a8aec2adf1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
+        visible: true,
+        onOffer: true,
+        unit: 'kg',
+      },
+      {
+        name: 'Tomate',
+        description: 'Fresco e selecionado',
+        price: 4.50,
+        originalPrice: 6.90,
+        discount: 34,
+        category: 'Hortifruti',
+        imageUrl: 'https://images.unsplash.com/photo-1768734837679-9b3180433384?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
+        visible: true,
+        onOffer: true,
+        unit: 'kg',
+      },
+      {
+        name: 'Banana Prata',
+        description: 'Direto do produtor',
+        price: 3.90,
+        originalPrice: 5.50,
+        discount: 29,
+        category: 'Hortifruti',
+        imageUrl: 'https://images.unsplash.com/photo-1768734837464-c5045c6a98c4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
+        visible: true,
+        onOffer: true,
+        unit: 'kg',
+      },
+    ];
+
+    try {
+      for (const prod of defaults) {
+        await addDoc(collection(db, 'products'), { ...prod, createdAt: serverTimestamp() });
+      }
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const set = (k: keyof typeof EMPTY, v: unknown) =>
     setForm(f => ({ ...f, [k]: v }));
 
@@ -96,16 +158,46 @@ export function ProductsPage() {
       </div>
 
       {/* Search */}
-      <input
-        type="text"
-        placeholder="Buscar por nome ou categoria..."
-        value={search}
-        onChange={e => setSearch(e.target.value)}
-        className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm mb-6 focus:outline-none focus:ring-2 focus:ring-red-500"
-      />
+      {products.length > 0 && (
+        <input
+          type="text"
+          placeholder="Buscar por nome ou categoria..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm mb-6 focus:outline-none focus:ring-2 focus:ring-red-500"
+        />
+      )}
+
+      {products.length === 0 && (
+        <div className="bg-white rounded-xl p-8 text-center flex flex-col items-center justify-center border-2 border-dashed border-gray-200 mt-6">
+          <div className="h-12 w-12 bg-gray-100 rounded-full flex items-center justify-center text-gray-400 mb-4">
+            <Plus className="h-6 w-6" />
+          </div>
+          <h3 className="text-lg font-bold text-gray-800 mb-2">Nenhum produto cadastrado</h3>
+          <p className="text-gray-500 mb-6 max-w-md">
+            Você pode importar nossas ofertas iniciais de demonstração ou cadastrar seus próprios produtos do zero.
+          </p>
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={loadInitialProducts} 
+              disabled={saving}
+              className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+            >
+              {saving ? 'Importando...' : 'Importar Produtos Iniciais'}
+            </button>
+            <button 
+              onClick={openCreate} 
+              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors"
+            >
+              Criar do Zero
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Desktop Table */}
-      <div className="hidden md:block bg-white rounded-xl shadow-sm overflow-hidden">
+      {products.length > 0 && (
+        <div className="hidden md:block bg-white rounded-xl shadow-sm overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
@@ -162,8 +254,10 @@ export function ProductsPage() {
           </tbody>
         </table>
       </div>
+      )}
 
       {/* Mobile Cards */}
+      {products.length > 0 && (
       <div className="md:hidden space-y-3">
         {filtered.length === 0 && (
           <div className="bg-white rounded-xl p-6 text-center text-gray-400 text-sm">Nenhum produto encontrado.</div>
@@ -197,6 +291,7 @@ export function ProductsPage() {
           </div>
         ))}
       </div>
+      )}
 
       {/* Modal (bottom-sheet no mobile) */}
       {modal && (
