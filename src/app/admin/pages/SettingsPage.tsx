@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { db } from '../../firebase/db';
+import { db } from '../../../firebase/db';
 import { Save, RefreshCw, Server, Shield, Link as LinkIcon } from 'lucide-react';
 
 export function SettingsPage() {

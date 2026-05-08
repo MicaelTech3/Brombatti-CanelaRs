@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { collection, onSnapshot, doc } from 'firebase/firestore';
-import { db } from '../../firebase/db';
+import { db } from '../../../firebase/db';
 import { Package, Star, Tag, MessageCircle } from 'lucide-react';
 
 export function DashboardHome() {

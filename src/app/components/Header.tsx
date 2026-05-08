@@ -11,8 +11,8 @@ export function Header() {
   const whatsappNumber = '5554984192145';
 
   useEffect(() => {
-    // Corte seco e instantâneo com exatos 2 segundos
-    const t = setTimeout(() => setShowSplash(false), 2000);
+    // 2s de vídeo + 0.3s de transição (fade out)
+    const t = setTimeout(() => setShowSplash(false), 2300);
     return () => clearTimeout(t);
   }, []);
 
@@ -25,6 +25,12 @@ export function Header() {
   return (
     <>
       <style>{`
+        @keyframes videoFadeOut {
+          0% { opacity: 1; }
+          85% { opacity: 1; }   /* Mantém 100% visível por ~1.8s (considerando os 2.3s do React) */
+          100% { opacity: 0; }  /* Fade out suave no final */
+        }
+
         .video-splash {
           position: fixed;
           inset: 0;
@@ -33,6 +39,7 @@ export function Header() {
           z-index: 101;
           object-fit: cover;
           background: #000;
+          animation: videoFadeOut 2.3s ease forwards;
         }
 
         .splash-overlay {
@@ -40,6 +47,18 @@ export function Header() {
           inset: 0;
           z-index: 100;
           background: #000;
+          pointer-events: none;
+          animation: videoFadeOut 2.3s ease forwards;
+        }
+
+        @keyframes pageFadeIn {
+          0% { opacity: 0; }
+          100% { opacity: 1; }
+        }
+
+        .page-content {
+          /* A página do site começa a aparecer (fade in) a partir de 1.8s */
+          animation: pageFadeIn 0.8s ease 1.8s both;
         }
       `}</style>
 
